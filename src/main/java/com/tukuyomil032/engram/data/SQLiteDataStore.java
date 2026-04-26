@@ -47,6 +47,30 @@ public final class SQLiteDataStore {
         }
     }
 
+    public synchronized long saveBattleRecord(BattleRecord battleRecord) throws SQLException {
+        List<PlayerContributionWriteModel> players = battleRecord.players().stream()
+            .map(player -> new PlayerContributionWriteModel(
+                player.playerUuid().toString(),
+                player.bowDamage(),
+                player.meleeDamage(),
+                player.explosionDamage(),
+                player.avgAltitude(),
+                player.fightCount()
+            ))
+            .toList();
+
+        return saveBattle(new BattleWriteModel(
+            battleRecord.worldUid().toString(),
+            battleRecord.foughtAt(),
+            battleRecord.durationMs(),
+            battleRecord.playerCount(),
+            battleRecord.victory(),
+            battleRecord.crystalTimeMs(),
+            battleRecord.strategyUsed(),
+            players
+        ));
+    }
+
     public synchronized void close() throws SQLException {
         if (connection == null) {
             return;

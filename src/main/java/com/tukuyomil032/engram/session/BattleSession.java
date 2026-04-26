@@ -85,6 +85,10 @@ public final class BattleSession {
         );
     }
 
+    public UUID getWorldUid() {
+        return worldUid;
+    }
+
     private MutableContribution contribution(UUID playerUuid) {
         return contributions.computeIfAbsent(playerUuid, ignored -> new MutableContribution());
     }

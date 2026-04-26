@@ -2,6 +2,11 @@ package com.tukuyomil032.engram;
 
 import com.tukuyomil032.engram.command.DragonAdminCommand;
 import com.tukuyomil032.engram.config.EngramConfig;
+import com.tukuyomil032.engram.data.SQLiteDataStore;
+import com.tukuyomil032.engram.listener.BattleTracker;
+import com.tukuyomil032.engram.listener.DragonDeathListener;
+import com.tukuyomil032.engram.listener.DragonSpawnListener;
+import com.tukuyomil032.engram.session.BattleSessionRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -9,12 +14,16 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.sql.SQLException;
 
 public final class EngramPlugin extends JavaPlugin {
     private EngramConfig engramConfig;
     private YamlConfiguration strategiesConfig;
     private File strategiesFile;
     private boolean crucibleAvailable;
+    private SQLiteDataStore dataStore;
+    private BattleSessionRegistry sessionRegistry;
+    private BattleTracker battleTracker;
 
     @Override
     public void onEnable() {
@@ -24,15 +33,36 @@ public final class EngramPlugin extends JavaPlugin {
         saveDefaultConfig();
         ensureStrategiesFile();
 
+        sessionRegistry = new BattleSessionRegistry();
+        dataStore = new SQLiteDataStore();
+        try {
+            dataStore.initialize(getDataFolder());
+        } catch (SQLException exception) {
+            getSLF4JLogger().error("Failed to initialize SQLite datastore.", exception);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+
         reloadEngramState();
         this.crucibleAvailable = isCrucibleAvailable();
 
         registerDragonCommand();
+        registerListeners();
         getSLF4JLogger().info("Engram enabled (Crucible available: {}).", crucibleAvailable);
     }
 
     @Override
     public void onDisable() {
+        if (battleTracker != null) {
+            battleTracker.stopAltitudeSampling();
+        }
+        if (dataStore != null) {
+            try {
+                dataStore.close();
+            } catch (SQLException exception) {
+                getSLF4JLogger().error("Failed to close SQLite datastore cleanly.", exception);
+            }
+        }
         getSLF4JLogger().info("Engram disabled.");
     }
 
@@ -66,6 +96,14 @@ public final class EngramPlugin extends JavaPlugin {
         return strategiesSection.getKeys(false).size();
     }
 
+    public BattleSessionRegistry getSessionRegistry() {
+        return sessionRegistry;
+    }
+
+    public SQLiteDataStore getDataStore() {
+        return dataStore;
+    }
+
     private boolean ensureMythicMobsAvailable() {
         Plugin mythic = Bukkit.getPluginManager().getPlugin("MythicMobs");
         if (mythic != null && mythic.isEnabled()) {
@@ -94,5 +132,14 @@ public final class EngramPlugin extends JavaPlugin {
         DragonAdminCommand command = new DragonAdminCommand(this);
         dragonCommand.setExecutor(command);
         dragonCommand.setTabCompleter(command);
+    }
+
+    private void registerListeners() {
+        battleTracker = new BattleTracker(this, sessionRegistry);
+        battleTracker.startAltitudeSampling();
+
+        Bukkit.getPluginManager().registerEvents(new DragonSpawnListener(sessionRegistry), this);
+        Bukkit.getPluginManager().registerEvents(battleTracker, this);
+        Bukkit.getPluginManager().registerEvents(new DragonDeathListener(this, sessionRegistry, dataStore), this);
     }
 }
