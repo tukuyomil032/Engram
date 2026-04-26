@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://json.schemastore.org/bukkit-plugin
+
+name: Engram
+version: 0.0.0
+main: com.tukuyomil032.engram.EngramPlugin
+api-version: '1.21.11'
+authors: [tukuyomil032]
+description: 
