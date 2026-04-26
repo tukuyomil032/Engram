@@ -1,5 +1,5 @@
 plugins {
-    Java
+    java
     id("com.gradleup.shadow") version "9.2.0"
     id("xyz.jpenilla.run-paper") version "3.0.2"
 }
@@ -9,16 +9,23 @@ version = "0.0.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-
     maven {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
     }
+    maven {
+        name = "lumine"
+        url = uri("https://mvn.lumine.io/repository/maven-public/")
+    }
 }
 
 dependencies {
-    api(libs.commons.math3)
-    implementation(libs.guava)
+    compileOnly(libs.paper.api)
+    compileOnly(libs.mythic.dist) { isTransitive = false }
+    compileOnly(libs.mythic.crucible) { isTransitive = false }
+    implementation(libs.sqlite.jdbc)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
 }
 
 java {
@@ -35,23 +42,18 @@ tasks.test {
 
 tasks.jar {
     archiveBaseName.set("engram")
-
-    manifest {
-        attributes(
-            "paperweight-mappings-namespace" to "spigot"
-        )
-    }
 }
 
 tasks.shadowJar {
     archiveBaseName.set("Engram")
     archiveClassifier.set("all")
+    relocate("org.sqlite", "com.tukuyomil032.engram.lib.sqlite")
 }
 
 tasks {
-  runServer {
-    minecraftVersion("1.21.11")
-  }
+    runServer {
+        minecraftVersion("1.21.4")
+    }
 }
 
 tasks.build {
