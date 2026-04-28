@@ -8,6 +8,9 @@ import com.tukuyomil032.engram.listener.BattleTracker;
 import com.tukuyomil032.engram.listener.DragonDeathListener;
 import com.tukuyomil032.engram.listener.DragonSpawnListener;
 import com.tukuyomil032.engram.session.BattleSessionRegistry;
+import com.tukuyomil032.engram.strategy.StrategyConfigParser;
+import com.tukuyomil032.engram.strategy.StrategyProfile;
+import com.tukuyomil032.engram.strategy.StrategyType;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -16,16 +19,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.Map;
 
 public final class EngramPlugin extends JavaPlugin {
     private EngramConfig engramConfig;
     private YamlConfiguration strategiesConfig;
+    private Map<StrategyType, StrategyProfile> strategyProfiles;
     private File strategiesFile;
     private boolean crucibleAvailable;
     private SQLiteDataStore dataStore;
     private BattleSessionRegistry sessionRegistry;
     private BattleTracker battleTracker;
     private SwapAnimator swapAnimator;
+    private final StrategyConfigParser strategyConfigParser = new StrategyConfigParser();
 
     @Override
     public void onEnable() {
@@ -45,7 +51,18 @@ public final class EngramPlugin extends JavaPlugin {
             return;
         }
 
-        reloadEngramState();
+        try {
+            reloadEngramState();
+        } catch (IllegalStateException exception) {
+            getSLF4JLogger().error("Failed to load Engram configuration.", exception);
+            try {
+                dataStore.close();
+            } catch (SQLException closeException) {
+                getSLF4JLogger().error("Failed to close SQLite datastore after startup failure.", closeException);
+            }
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
         this.crucibleAvailable = isCrucibleAvailable();
 
         registerDragonCommand();
@@ -70,8 +87,17 @@ public final class EngramPlugin extends JavaPlugin {
 
     public void reloadEngramState() {
         reloadConfig();
-        engramConfig = EngramConfig.fromConfiguration(getConfig());
-        strategiesConfig = YamlConfiguration.loadConfiguration(strategiesFile);
+        EngramConfig reloadedConfig = EngramConfig.fromConfiguration(getConfig());
+        YamlConfiguration reloadedStrategies = YamlConfiguration.loadConfiguration(strategiesFile);
+        Map<StrategyType, StrategyProfile> reloadedProfiles;
+        try {
+            reloadedProfiles = strategyConfigParser.parse(reloadedStrategies);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalStateException("Invalid strategies.yml: " + exception.getMessage(), exception);
+        }
+        engramConfig = reloadedConfig;
+        strategiesConfig = reloadedStrategies;
+        strategyProfiles = reloadedProfiles;
     }
 
     public EngramConfig getEngramConfig() {
@@ -82,20 +108,20 @@ public final class EngramPlugin extends JavaPlugin {
         return strategiesConfig;
     }
 
+    public Map<StrategyType, StrategyProfile> getStrategyProfiles() {
+        return strategyProfiles;
+    }
+
     public boolean isCrucibleAvailable() {
         Plugin crucible = Bukkit.getPluginManager().getPlugin("MythicCrucible");
         return crucible != null && crucible.isEnabled();
     }
 
     public int getStrategyCount() {
-        if (strategiesConfig == null) {
+        if (strategyProfiles == null) {
             return 0;
         }
-        var strategiesSection = strategiesConfig.getConfigurationSection("strategies");
-        if (strategiesSection == null) {
-            return 0;
-        }
-        return strategiesSection.getKeys(false).size();
+        return strategyProfiles.size();
     }
 
     public BattleSessionRegistry getSessionRegistry() {
