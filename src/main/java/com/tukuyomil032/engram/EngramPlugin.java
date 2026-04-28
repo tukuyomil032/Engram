@@ -3,6 +3,7 @@ package com.tukuyomil032.engram;
 import com.tukuyomil032.engram.command.DragonAdminCommand;
 import com.tukuyomil032.engram.config.EngramConfig;
 import com.tukuyomil032.engram.data.SQLiteDataStore;
+import com.tukuyomil032.engram.animation.SwapAnimator;
 import com.tukuyomil032.engram.listener.BattleTracker;
 import com.tukuyomil032.engram.listener.DragonDeathListener;
 import com.tukuyomil032.engram.listener.DragonSpawnListener;
@@ -24,6 +25,7 @@ public final class EngramPlugin extends JavaPlugin {
     private SQLiteDataStore dataStore;
     private BattleSessionRegistry sessionRegistry;
     private BattleTracker battleTracker;
+    private SwapAnimator swapAnimator;
 
     @Override
     public void onEnable() {
@@ -135,10 +137,11 @@ public final class EngramPlugin extends JavaPlugin {
     }
 
     private void registerListeners() {
+        swapAnimator = new SwapAnimator(this);
         battleTracker = new BattleTracker(this, sessionRegistry);
         battleTracker.startAltitudeSampling();
 
-        Bukkit.getPluginManager().registerEvents(new DragonSpawnListener(sessionRegistry), this);
+        Bukkit.getPluginManager().registerEvents(new DragonSpawnListener(sessionRegistry, swapAnimator), this);
         Bukkit.getPluginManager().registerEvents(battleTracker, this);
         Bukkit.getPluginManager().registerEvents(new DragonDeathListener(this, sessionRegistry, dataStore), this);
     }

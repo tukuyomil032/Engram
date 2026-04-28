@@ -1,5 +1,6 @@
 package com.tukuyomil032.engram.listener;
 
+import com.tukuyomil032.engram.animation.SwapAnimator;
 import com.tukuyomil032.engram.session.BattleSessionRegistry;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.event.EventHandler;
@@ -13,9 +14,11 @@ public final class DragonSpawnListener implements Listener {
     private static final int DEFAULT_EXPECTED_CRYSTALS = 10;
 
     private final BattleSessionRegistry sessionRegistry;
+    private final SwapAnimator swapAnimator;
 
-    public DragonSpawnListener(BattleSessionRegistry sessionRegistry) {
+    public DragonSpawnListener(BattleSessionRegistry sessionRegistry, SwapAnimator swapAnimator) {
         this.sessionRegistry = sessionRegistry;
+        this.swapAnimator = swapAnimator;
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -30,5 +33,8 @@ public final class DragonSpawnListener implements Listener {
         }
 
         sessionRegistry.startSession(worldUid, "DEFAULT", System.currentTimeMillis(), DEFAULT_EXPECTED_CRYSTALS);
+        dragon.setInvisible(true);
+        dragon.setInvulnerable(true);
+        swapAnimator.start(dragon, "DEFAULT");
     }
 }
