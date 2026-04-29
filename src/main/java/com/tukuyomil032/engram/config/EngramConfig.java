@@ -106,6 +106,10 @@ public final class EngramConfig {
     }
 
     private static double clampBlendRatio(double value) {
+        // Handle non-finite values (NaN, Infinity) by returning a safe default
+        if (!Double.isFinite(value)) {
+            return 0.0D;
+        }
         if (value < 0.0D) {
             return 0.0D;
         }

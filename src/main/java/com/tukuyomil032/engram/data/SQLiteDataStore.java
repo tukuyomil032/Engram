@@ -26,13 +26,27 @@ public final class SQLiteDataStore {
         }
 
         File dbFile = new File(dataFolder, DB_FILE_NAME);
-        connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
-        try (Statement statement = connection.createStatement()) {
-            statement.execute("PRAGMA journal_mode=WAL;");
-            statement.execute("PRAGMA foreign_keys=ON;");
-            statement.execute("PRAGMA synchronous=NORMAL;");
+        Connection localConn = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
+        try {
+            try (Statement statement = localConn.createStatement()) {
+                statement.execute("PRAGMA journal_mode=WAL;");
+                statement.execute("PRAGMA foreign_keys=ON;");
+                statement.execute("PRAGMA synchronous=NORMAL;");
+            }
+            // Temporarily assign connection for runMigrations to use
+            connection = localConn;
+            runMigrations();
+            // If we reach here, initialization succeeded
+        } catch (SQLException exception) {
+            // Cleanup partial initialization
+            try {
+                localConn.close();
+            } catch (SQLException ignored) {
+                // Ignore cleanup errors
+            }
+            connection = null;
+            throw exception;
         }
-        runMigrations();
     }
 
     public synchronized long saveBattle(BattleWriteModel battle) throws SQLException {

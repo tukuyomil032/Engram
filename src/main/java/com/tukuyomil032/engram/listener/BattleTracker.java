@@ -95,8 +95,8 @@ public final class BattleTracker implements Listener {
             return;
         }
 
-        Entity crystal = event.getEntity();
-        if (event.getFinalDamage() < crystal.getHealth()) {
+        // EnderCrystal is not Damageable, so check if damage will destroy it
+        if (event.getFinalDamage() <= 0) {
             return;
         }
 
@@ -105,7 +105,7 @@ public final class BattleTracker implements Listener {
             return;
         }
 
-        UUID worldUid = crystal.getWorld().getUID();
+        UUID worldUid = event.getEntity().getWorld().getUID();
         BattleSession session = sessionRegistry.getSession(worldUid);
         if (session == null) {
             return;

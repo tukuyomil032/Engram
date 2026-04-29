@@ -98,8 +98,8 @@ public final class StrategyConfigParser {
             throw invalidTrigger(strategyKey, phaseNumber, triggerText, "expected syntax <type>:<value>");
         }
 
-        String triggerType = parts[0].toLowerCase(Locale.ROOT);
-        String triggerValue = parts[1];
+        String triggerType = parts[0].trim().toLowerCase(Locale.ROOT);
+        String triggerValue = parts[1].trim();
         try {
             return switch (triggerType) {
                 case "hp_percent" -> new PhaseTrigger.HpPercentTrigger(parsePercent(triggerValue));
