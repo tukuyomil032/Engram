@@ -167,8 +167,8 @@ public final class EngramPlugin extends JavaPlugin {
         battleTracker = new BattleTracker(this, sessionRegistry);
         battleTracker.startAltitudeSampling();
 
-        Bukkit.getPluginManager().registerEvents(new DragonSpawnListener(sessionRegistry, swapAnimator), this);
+        Bukkit.getPluginManager().registerEvents(new DragonSpawnListener(sessionRegistry, swapAnimator, battleTracker), this);
         Bukkit.getPluginManager().registerEvents(battleTracker, this);
-        Bukkit.getPluginManager().registerEvents(new DragonDeathListener(this, sessionRegistry, dataStore), this);
+        Bukkit.getPluginManager().registerEvents(new DragonDeathListener(this, sessionRegistry, dataStore, battleTracker), this);
     }
 }

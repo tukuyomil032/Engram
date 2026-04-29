@@ -60,11 +60,12 @@ public final class SwapAnimator {
                         }
                     }
                     case REMOVE_VANILLA -> {
-                        if (!vanillaDragon.isDead()) {
+                        spawnedMythicDragon = spawnMythicDragon(spawnLocation);
+                        if (spawnedMythicDragon != null && !vanillaDragon.isDead()) {
                             vanillaDragon.remove();
                         }
                     }
-                    case SPAWN_MYTHIC -> spawnedMythicDragon = spawnMythicDragon(spawnLocation);
+                    case SPAWN_MYTHIC -> { }
                     case APPLY_STRATEGY -> {
                         castAwakeningSkill(spawnedMythicDragon, awakeningSkill);
                         plugin.getSLF4JLogger().info("Swap animation finished with strategy '{}'.", strategyName);

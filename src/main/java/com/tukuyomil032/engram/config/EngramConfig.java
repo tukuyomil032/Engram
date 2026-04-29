@@ -1,8 +1,11 @@
 package com.tukuyomil032.engram.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class EngramConfig {
+    private static final Logger logger = LoggerFactory.getLogger(EngramConfig.class);
     private static final int DEFAULT_WINDOW_SIZE = 100;
     private static final int DEFAULT_BLEND_THRESHOLD = 3;
     private static final double DEFAULT_BLEND_RATIO = 0.3D;
@@ -66,14 +69,32 @@ public final class EngramConfig {
     }
 
     public static EngramConfig fromConfiguration(FileConfiguration config) {
+        String mythicMobName = config.getString("dragon.mythicmob-name", DEFAULT_MYTHIC_MOB_NAME);
+        if (mythicMobName != null) {
+            mythicMobName = mythicMobName.trim();
+        }
+        if (mythicMobName == null || mythicMobName.isBlank()) {
+            logger.warn("dragon.mythicmob-name is blank; falling back to default: {}", DEFAULT_MYTHIC_MOB_NAME);
+            mythicMobName = DEFAULT_MYTHIC_MOB_NAME;
+        }
+
+        String awakeningSkill = config.getString("dragon.awakening-skill", DEFAULT_AWAKENING_SKILL);
+        if (awakeningSkill != null) {
+            awakeningSkill = awakeningSkill.trim();
+        }
+        if (awakeningSkill == null || awakeningSkill.isBlank()) {
+            logger.warn("dragon.awakening-skill is blank; falling back to default: {}", DEFAULT_AWAKENING_SKILL);
+            awakeningSkill = DEFAULT_AWAKENING_SKILL;
+        }
+
         return new EngramConfig(
             Math.max(1, config.getInt("learning.window-size", DEFAULT_WINDOW_SIZE)),
             Math.max(1, config.getInt("learning.individual-blend-threshold", DEFAULT_BLEND_THRESHOLD)),
             clampBlendRatio(config.getDouble("learning.individual-blend-ratio", DEFAULT_BLEND_RATIO)),
             Math.max(1L, config.getLong("thresholds.fast-crystal-ms", DEFAULT_FAST_CRYSTAL_MS)),
             Math.max(1L, config.getLong("thresholds.speedrun-ms", DEFAULT_SPEEDRUN_MS)),
-            config.getString("dragon.mythicmob-name", DEFAULT_MYTHIC_MOB_NAME),
-            config.getString("dragon.awakening-skill", DEFAULT_AWAKENING_SKILL),
+            mythicMobName,
+            awakeningSkill,
             Math.max(1, config.getInt("dragon.animation-ticks", DEFAULT_ANIMATION_TICKS)),
             config.getBoolean("animation.preset-enabled", DEFAULT_PRESET_ENABLED),
             config.getBoolean("animation.lightning", DEFAULT_LIGHTNING_ENABLED),

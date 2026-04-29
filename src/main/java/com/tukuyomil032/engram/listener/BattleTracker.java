@@ -14,7 +14,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.UUID;
@@ -56,6 +55,14 @@ public final class BattleTracker implements Listener {
         }
     }
 
+    public void clearBattleState(UUID worldUid) {
+        crystalIndices.remove(worldUid);
+    }
+
+    public void initializeBattleState(UUID worldUid) {
+        crystalIndices.put(worldUid, new AtomicInteger(0));
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDragonDamaged(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof EnderDragon dragon)) {
@@ -83,17 +90,22 @@ public final class BattleTracker implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onCrystalDestroyed(EntityDeathEvent event) {
+    public void onCrystalDestroyed(EntityDamageByEntityEvent event) {
         if (event.getEntityType() != org.bukkit.entity.EntityType.END_CRYSTAL) {
             return;
         }
 
-        Player killer = event.getEntity().getKiller();
+        Entity crystal = event.getEntity();
+        if (event.getFinalDamage() < crystal.getHealth()) {
+            return;
+        }
+
+        Player killer = resolveAttacker(event.getDamager());
         if (killer == null) {
             return;
         }
 
-        UUID worldUid = event.getEntity().getWorld().getUID();
+        UUID worldUid = crystal.getWorld().getUID();
         BattleSession session = sessionRegistry.getSession(worldUid);
         if (session == null) {
             return;

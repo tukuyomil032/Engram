@@ -21,6 +21,14 @@ public final class StrategyConfigParser {
         Map<StrategyType, StrategyProfile> profiles = new EnumMap<>(StrategyType.class);
         for (String rawStrategyKey : strategiesSection.getKeys(false)) {
             StrategyType strategyType = parseStrategyType(rawStrategyKey);
+
+            if (profiles.containsKey(strategyType)) {
+                throw new IllegalArgumentException(
+                    "Duplicate strategy type '%s' detected for raw key '%s' (already defined by another key)"
+                        .formatted(strategyType, rawStrategyKey)
+                );
+            }
+
             ConfigurationSection strategySection = strategiesSection.getConfigurationSection(rawStrategyKey);
             if (strategySection == null) {
                 throw new IllegalArgumentException("Strategy '%s' must be a configuration section".formatted(rawStrategyKey));

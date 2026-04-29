@@ -10,12 +10,16 @@ public final class BattleSessionRegistry {
 
     public BattleSession startSession(UUID worldUid, String strategyUsed, long startedAt, int expectedCrystals) {
         BattleSession session = new BattleSession(worldUid, strategyUsed, startedAt, expectedCrystals);
-        sessionsByWorld.put(worldUid, session);
-        return session;
+        BattleSession existing = sessionsByWorld.putIfAbsent(worldUid, session);
+        return existing != null ? existing : session;
     }
 
     public BattleSession getSession(UUID worldUid) {
         return sessionsByWorld.get(worldUid);
+    }
+
+    public BattleSession takeSession(UUID worldUid) {
+        return sessionsByWorld.remove(worldUid);
     }
 
     public void removeSession(UUID worldUid) {

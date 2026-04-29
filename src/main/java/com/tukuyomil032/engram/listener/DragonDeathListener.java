@@ -19,11 +19,13 @@ public final class DragonDeathListener implements Listener {
     private final EngramPlugin plugin;
     private final BattleSessionRegistry sessionRegistry;
     private final SQLiteDataStore dataStore;
+    private final BattleTracker battleTracker;
 
-    public DragonDeathListener(EngramPlugin plugin, BattleSessionRegistry sessionRegistry, SQLiteDataStore dataStore) {
+    public DragonDeathListener(EngramPlugin plugin, BattleSessionRegistry sessionRegistry, SQLiteDataStore dataStore, BattleTracker battleTracker) {
         this.plugin = plugin;
         this.sessionRegistry = sessionRegistry;
         this.dataStore = dataStore;
+        this.battleTracker = battleTracker;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -40,6 +42,7 @@ public final class DragonDeathListener implements Listener {
 
         BattleRecord battleRecord = session.finalizeBattle(System.currentTimeMillis(), true);
         sessionRegistry.removeSession(worldUid);
+        battleTracker.clearBattleState(worldUid);
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {

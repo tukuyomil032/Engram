@@ -17,6 +17,10 @@ public final class SQLiteDataStore {
     private Connection connection;
 
     public synchronized void initialize(File dataFolder) throws SQLException {
+        if (connection != null && !connection.isClosed()) {
+            return;
+        }
+
         if (!dataFolder.exists() && !dataFolder.mkdirs()) {
             throw new SQLException("Could not create plugin data directory: " + dataFolder.getAbsolutePath());
         }

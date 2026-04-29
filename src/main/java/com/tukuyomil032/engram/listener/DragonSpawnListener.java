@@ -15,10 +15,12 @@ public final class DragonSpawnListener implements Listener {
 
     private final BattleSessionRegistry sessionRegistry;
     private final SwapAnimator swapAnimator;
+    private final BattleTracker battleTracker;
 
-    public DragonSpawnListener(BattleSessionRegistry sessionRegistry, SwapAnimator swapAnimator) {
+    public DragonSpawnListener(BattleSessionRegistry sessionRegistry, SwapAnimator swapAnimator, BattleTracker battleTracker) {
         this.sessionRegistry = sessionRegistry;
         this.swapAnimator = swapAnimator;
+        this.battleTracker = battleTracker;
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -33,6 +35,7 @@ public final class DragonSpawnListener implements Listener {
         }
 
         sessionRegistry.startSession(worldUid, "DEFAULT", System.currentTimeMillis(), DEFAULT_EXPECTED_CRYSTALS);
+        battleTracker.initializeBattleState(worldUid);
         dragon.setInvisible(true);
         dragon.setInvulnerable(true);
         swapAnimator.start(dragon, "DEFAULT");

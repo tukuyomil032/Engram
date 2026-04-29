@@ -50,6 +50,7 @@ tasks.shadowJar {
     archiveBaseName.set("Engram")
     archiveClassifier.set("all")
     relocate("org.sqlite", "com.tukuyomil032.engram.lib.sqlite")
+    mergeServiceFiles()
 }
 
 tasks {
