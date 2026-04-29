@@ -1,8 +1,21 @@
 # yaml-language-server: $schema=https://json.schemastore.org/bukkit-plugin
 
 name: Engram
-version: 0.0.0
+version: 0.0.0-SNAPSHOT
 main: com.tukuyomil032.engram.EngramPlugin
-api-version: '1.21.11'
+api-version: '1.21'
 authors: [tukuyomil032]
-description: 
+description: Adaptive Ender Dragon that learns from player behavior
+depend:
+  - MythicMobs
+softdepend:
+  - MythicCrucible
+commands:
+  dragon:
+    description: Engram admin commands
+    usage: /dragon <subcommand>
+    permission: engram.admin
+permissions:
+  engram.admin:
+    description: Access to all /dragon commands
+    default: op

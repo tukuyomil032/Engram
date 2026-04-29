@@ -1,0 +1,34 @@
+strategies:
+  ANTI_ARCHER:
+    description: "Forces dragon to stay low, making bow shots harder"
+    phases:
+      - trigger: "hp_percent:75"
+        skills:
+          - "DragonAntiArcher_Phase1"
+      - trigger: "hp_percent:50"
+        skills:
+          - "DragonAntiArcher_Phase2"
+
+  ANTI_MELEE:
+    description: "Increases breath frequency and knockback to deny close range"
+    phases:
+      - trigger: "hp_percent:75"
+        skills:
+          - "DragonAntiMelee_Phase1"
+      - trigger: "timer_seconds:30"
+        skills:
+          - "DragonBreathBarrage"
+
+  ANTI_CRYSTAL:
+    description: "Spawns guards near crystals and heals when crystals are active"
+    phases:
+      - trigger: "hp_percent:75"
+        skills:
+          - "DragonCrystalGuard"
+
+  ANTI_SPEEDRUN:
+    description: "Adds self-heal phases and increases damage output"
+    phases:
+      - trigger: "hp_percent:75"
+        skills:
+          - "DragonSpeedrunPhase1"

@@ -1,0 +1,21 @@
+learning:
+  window-size: 100
+  individual-blend-threshold: 3
+  individual-blend-ratio: 0.3
+
+thresholds:
+  fast-crystal-ms: 45000
+  speedrun-ms: 120000
+
+dragon:
+  mythicmob-name: "EngramDragon"
+  awakening-skill: "EngramAwakening"
+  animation-ticks: 60
+
+animation:
+  preset-enabled: true
+  lightning: true
+  particles: true
+  sound: true
+  chat-message: "&5The dragon remembers..."
+  title: "???"
